@@ -58,7 +58,7 @@ def train(args):
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters())
     liver_dataset = LiverDataset("data/train",transform=x_transforms,target_transform=y_transforms)
-    dataloaders = DataLoader(liver_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+    dataloaders = DataLoader(liver_dataset, batch_size=batch_size, shuffle=True, num_workers=1)
     # shuffle = True,  # 乱序
     # num_workers = 2  # 多进程
     # DataLoader:该接口主要用来将自定义的数据读取接口的输出或者PyTorch已有的数据读取接口的输入按照batch size封装成Tensor
@@ -84,10 +84,23 @@ def test(args):
             img_y=torch.squeeze(y).numpy()#对数据的维度进行压缩或者解压。Tensor转化为PIL图片
             from PIL import Image
             # image_array是归一化的二维浮点数矩阵
+
             img_y *= 255  # 变换为0-255的灰度值
             im = Image.fromarray(img_y)
-            im = im.convert('1')  # 这样才能转为灰度图，如果是彩色图则改L为‘RGB’
+            im = im.convert('L')  # 这样才能转为灰度图，如果是彩色图则改L为‘RGB’
             matplotlib.image.imsave('%03d_predict.png'%n, im)
+
+            threshold = 180
+
+            table = []
+            for i in range(256):
+                if i < threshold:
+                    table.append(0)
+                else:
+                    table.append(1)
+
+            photo = im.point(table, '1')
+            matplotlib.image.imsave('%03d_predict1.png'%n, photo)
             #plt.imshow(img_y)
             n=n+1
         #     plt.pause(5)
@@ -100,7 +113,7 @@ if __name__ == '__main__':
     parse=argparse.ArgumentParser()
     parse = argparse.ArgumentParser()
     parse.add_argument("action", type=str, help="train or test")
-    parse.add_argument("--batch_size", type=int, default=2)
+    parse.add_argument("--batch_size", type=int, default=1)
     parse.add_argument("--ckpt", type=str, help="the path of model weight file")
     args = parse.parse_args()
 
