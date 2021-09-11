@@ -6,7 +6,7 @@
 python main.py train
 ```
 
-## test
+## testing
 load the last saved weight
 ```
 python main.py test --ckpt=weights_1.pth
